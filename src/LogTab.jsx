@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { FOODS, PRESETS, entryFromFood } from './db.js'
+import { FOODS, PRESETS, entryFromFood, addDays, fmtDay } from './db.js'
 import DateNav from './DateNav.jsx'
 
 const r5 = (x) => Math.round(x / 5) * 5
@@ -12,6 +12,19 @@ export default function LogTab({ store, date, setDate }) {
   const [qty, setQty] = useState('')
   const [custom, setCustom] = useState({ name: '', kcal: '', p: '', c: '', f: '' })
   const [showCustom, setShowCustom] = useState(false)
+
+  // Nearest earlier day (within 14) that has food logged — source for "copy day".
+  let prevLogged = null
+  for (let i = 1; i <= 14 && !prevLogged; i++) {
+    const d = addDays(date, -i)
+    if ((store.state.days[d]?.foods ?? []).length > 0) prevLogged = d
+  }
+
+  const copyPrevDay = () => {
+    if (!prevLogged) return
+    const src = store.state.days[prevLogged].foods
+    store.addFoods(date, src.map((f) => ({ ...f, id: crypto.randomUUID() })))
+  }
 
   const addGranular = () => {
     const q = parseFloat(qty)
@@ -58,6 +71,11 @@ export default function LogTab({ store, date, setDate }) {
             </button>
           ))}
         </div>
+        {prevLogged && (
+          <button style={{ width: '100%', marginTop: 10 }} onClick={copyPrevDay}>
+            Copy {fmtDay(prevLogged)}’s food log →
+          </button>
+        )}
       </section>
 
       <section>
@@ -116,7 +134,7 @@ export default function LogTab({ store, date, setDate }) {
             <ul className="food-list">
               {day.foods.map((f) => (
                 <li key={f.id}>
-                  <span className="qty">{formatQty(f.qty)} {f.unit}</span>
+                  <EditableQty food={f} onCommit={(q) => rescale(store, date, f, q)} />
                   <span className="fname">{f.name}</span>
                   {f.buffer && <span className="tag-buffer">buffer</span>}
                   <span className="kcal">{r5(f.kcal)} kcal · {r1(f.p)}P</span>
@@ -124,6 +142,7 @@ export default function LogTab({ store, date, setDate }) {
                 </li>
               ))}
             </ul>
+            <div className="dim" style={{ fontSize: 12, marginTop: 8 }}>Tap a quantity to edit it</div>
           </div>
         </section>
       )}
@@ -133,4 +152,53 @@ export default function LogTab({ store, date, setDate }) {
 
 function formatQty(q) {
   return Number.isInteger(q) ? q : q.toFixed(1)
+}
+
+// Entries carry their own macro snapshot, so editing qty rescales it linearly.
+function rescale(store, date, food, newQty) {
+  if (!newQty || newQty <= 0 || newQty === food.qty) return
+  const k = newQty / food.qty
+  store.updateFood(date, food.id, {
+    qty: newQty,
+    kcal: food.kcal * k,
+    p: food.p * k,
+    c: food.c * k,
+    f: food.f * k,
+  })
+}
+
+function EditableQty({ food, onCommit }) {
+  const [editing, setEditing] = useState(false)
+  const [val, setVal] = useState('')
+
+  const commit = () => {
+    onCommit(parseFloat(val))
+    setEditing(false)
+  }
+
+  if (!editing) {
+    return (
+      <button
+        className="qty"
+        style={{ background: 'none', border: 'none', padding: 0, textAlign: 'left', textDecoration: 'underline dotted' }}
+        onClick={() => { setVal(String(food.qty)); setEditing(true) }}
+        aria-label={`Edit quantity of ${food.name}`}
+      >
+        {formatQty(food.qty)} {food.unit}
+      </button>
+    )
+  }
+  return (
+    <input
+      type="number"
+      inputMode="decimal"
+      autoFocus
+      value={val}
+      onChange={(e) => setVal(e.target.value)}
+      onBlur={commit}
+      onKeyDown={(e) => e.key === 'Enter' && commit()}
+      style={{ width: 72, flex: 'none', padding: '4px 8px' }}
+      aria-label={`Quantity (${food.unit})`}
+    />
+  )
 }

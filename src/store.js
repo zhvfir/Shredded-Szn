@@ -44,6 +44,11 @@ export function useCutLog() {
   const removeFood = (date, id) =>
     updateDayFn(date, (d) => ({ foods: d.foods.filter((f) => f.id !== id) }))
 
+  const updateFood = (date, id, patch) =>
+    updateDayFn(date, (d) => ({
+      foods: d.foods.map((f) => (f.id === id ? { ...f, ...patch } : f)),
+    }))
+
   function updateDayFn(date, fn) {
     setState((s) => {
       const d = { ...emptyDay(), ...s.days[date] }
@@ -74,6 +79,23 @@ export function useCutLog() {
       customSupplements: s.customSupplements.filter((n) => n !== name),
     }))
 
+  const exportJSON = () => ({
+    app: 'shredded-szn',
+    version: 1,
+    exportedAt: new Date().toISOString(),
+    weights: state.weights,
+    days: state.days,
+    customSupplements: state.customSupplements,
+  })
+
+  // Wholesale replace — import is restore, not merge.
+  const replaceState = (next) =>
+    setState({
+      weights: Array.isArray(next.weights) ? next.weights : [],
+      days: next.days && typeof next.days === 'object' ? next.days : {},
+      customSupplements: Array.isArray(next.customSupplements) ? next.customSupplements : [],
+    })
+
   return {
     state,
     getDay,
@@ -81,10 +103,13 @@ export function useCutLog() {
     updateDayFn,
     addFoods,
     removeFood,
+    updateFood,
     setWeight,
     allSupplements,
     addSupplement,
     removeSupplement,
+    exportJSON,
+    replaceState,
   }
 }
 

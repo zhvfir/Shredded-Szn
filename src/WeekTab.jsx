@@ -1,5 +1,5 @@
-import { useState } from 'react'
-import { WORKOUT_SHORT, STEP_GOAL, totals, mondayOf, addDays, todayISO, fromISO } from './db.js'
+import { useRef, useState } from 'react'
+import { WORKOUT_SHORT, STEP_GOAL, totals, mondayOf, addDays, todayISO, fromISO, fmtDay } from './db.js'
 
 export default function WeekTab({ store, openDay }) {
   const [weekStart, setWeekStart] = useState(mondayOf(todayISO()))
@@ -49,7 +49,68 @@ export default function WeekTab({ store, openDay }) {
           </button>
         )
       })}
+
+      <DataCard store={store} />
     </>
+  )
+}
+
+function DataCard({ store }) {
+  const fileRef = useRef(null)
+
+  const exportBackup = () => {
+    const blob = new Blob([JSON.stringify(store.exportJSON(), null, 2)], { type: 'application/json' })
+    const url = URL.createObjectURL(blob)
+    const a = document.createElement('a')
+    a.href = url
+    a.download = `shredded-szn-backup-${todayISO()}.json`
+    document.body.appendChild(a)
+    a.click()
+    a.remove()
+    URL.revokeObjectURL(url)
+  }
+
+  const onImportFile = async (e) => {
+    const file = e.target.files?.[0]
+    e.target.value = ''
+    if (!file) return
+    try {
+      const data = JSON.parse(await file.text())
+      if (!data || typeof data.days !== 'object' || !Array.isArray(data.weights)) {
+        alert('That file is not a Shredded Szn backup.')
+        return
+      }
+      const dayCount = Object.keys(data.days).length
+      const from = data.exportedAt ? fmtDay(data.exportedAt.slice(0, 10)) : 'unknown date'
+      if (confirm(`Replace the current log with the backup from ${from}? (${dayCount} days, ${data.weights.length} weigh-ins)`)) {
+        store.replaceState(data)
+      }
+    } catch {
+      alert('Could not read that file as JSON.')
+    }
+  }
+
+  return (
+    <section style={{ marginTop: 24 }}>
+      <div className="sec">Data</div>
+      <div className="card">
+        <div className="add-row" style={{ marginTop: 0 }}>
+          <button style={{ flex: 1 }} onClick={exportBackup}>Export backup</button>
+          <button style={{ flex: 1 }} onClick={() => fileRef.current?.click()}>Import backup</button>
+        </div>
+        <input
+          ref={fileRef}
+          type="file"
+          accept="application/json,.json"
+          onChange={onImportFile}
+          style={{ display: 'none' }}
+          aria-label="Import backup file"
+        />
+        <div className="dim" style={{ fontSize: 12, marginTop: 8 }}>
+          Your log lives only on this device. Export a backup now and then — importing replaces everything with the backup.
+        </div>
+      </div>
+    </section>
   )
 }
 
