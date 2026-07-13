@@ -46,8 +46,7 @@ export default function App() {
   return (
     <>
       <div className="header">
-        <h1>Cut Log</h1>
-        <span className="goal num">78.7 → 75.7 kg</span>
+        <h1>Shredded Szn</h1>
       </div>
 
       {tab === 'today' && (

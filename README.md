@@ -1,4 +1,4 @@
-# Cut Log
+# Shredded Szn
 
 Personal cut tracker — 78.7 kg → 75.7 kg by end of July 2026.
 Mobile-first React app styled with GitHub dark (Primer) colours — #0D1117
