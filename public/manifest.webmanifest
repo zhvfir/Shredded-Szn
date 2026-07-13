@@ -1,0 +1,13 @@
+{
+  "name": "Cut Log",
+  "short_name": "Cut Log",
+  "description": "Personal cut tracker — macros, weight glide path, workouts, steps",
+  "start_url": ".",
+  "display": "standalone",
+  "background_color": "#0D1117",
+  "theme_color": "#0D1117",
+  "icons": [
+    { "src": "icon-512.png", "sizes": "512x512", "type": "image/png" },
+    { "src": "apple-touch-icon.png", "sizes": "180x180", "type": "image/png" }
+  ]
+}
