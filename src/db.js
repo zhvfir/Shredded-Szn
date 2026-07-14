@@ -36,13 +36,12 @@ export const FOODS = {
 // One-tap staples.
 export const PRESETS = [
   { name: 'Rice — 200 g', items: [['rice', 200]] },
+  { name: 'Rice — 150 g', items: [['rice', 150]] },
   { name: 'Sweet Potato — 250 g', items: [['sweetpotato', 250]] },
   { name: 'Titan Whey — 2 Scoops', items: [['whey', 2]] },
   { name: 'New Multi — 4 Pieces', items: [['multi', 4]] },
   { name: '½ Roasted Chicken', items: [['roastchicken', 1]] },
   { name: 'Eggs — 2', items: [['egg', 2]] },
-  { name: 'Pre-workout',
-    items: [['ricecake', 3], ['banana', 1, { counted: true }], ['honey', 1]] },
 ]
 
 export const WORKOUT_TYPES = ['Chest & Back', 'Shoulders & Arms', 'Legs', 'Cardio', 'Run']
