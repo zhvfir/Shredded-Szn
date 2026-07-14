@@ -192,6 +192,9 @@ function DataCard({ store }) {
         <div className="dim" style={{ fontSize: 12, marginTop: 8 }}>
           Your log lives only on this device. Export a backup now and then — importing replaces everything with the backup.
         </div>
+        <div className="dim" style={{ fontSize: 11, marginTop: 6 }}>
+          Version {__APP_VERSION__}
+        </div>
       </div>
     </section>
   )

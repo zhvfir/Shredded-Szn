@@ -28,10 +28,16 @@ export async function fetchSteps(apiKey, oldestISO, newestISO) {
   try {
     res = await fetch(
       `${API_BASE}/athlete/0/wellness?oldest=${oldestISO}&newest=${newestISO}`,
-      { headers: { Authorization: 'Basic ' + btoa('API_KEY:' + apiKey) } }
+      {
+        headers: { Authorization: 'Basic ' + btoa('API_KEY:' + apiKey) },
+        signal: AbortSignal.timeout(15000),
+      }
     )
-  } catch {
-    // fetch() only throws before a response is readable — network or CORS
+  } catch (e) {
+    // fetch() only throws before a response is readable — network, CORS, or timeout
+    if (e?.name === 'TimeoutError') {
+      throw new Error('intervals.icu did not respond within 15s — try again')
+    }
     throw new Error('Could not reach intervals.icu (offline, or the browser blocked the request)')
   }
   if (res.status === 401 || res.status === 403) {

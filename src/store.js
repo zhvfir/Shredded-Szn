@@ -95,20 +95,20 @@ export function useCutLog() {
     }))
 
   // Synced steps fill empty days and refresh sync-sourced days,
-  // but never overwrite a manually typed value.
+  // but never overwrite a manually typed value. Computed against the
+  // current committed state so the returned count is real — a setState
+  // updater runs at flush time, after the caller needs the number.
   const applySyncedSteps = (rows) => {
     let filled = 0
-    setState((s) => {
-      const days = { ...s.days }
-      for (const { date, steps } of rows) {
-        const d = { ...emptyDay(), ...days[date] }
-        if (d.steps == null || d.stepsSource === 'sync') {
-          if (d.steps !== steps) filled++
-          days[date] = { ...d, steps, stepsSource: 'sync' }
-        }
+    const days = { ...state.days }
+    for (const { date, steps } of rows) {
+      const d = { ...emptyDay(), ...days[date] }
+      if (d.steps == null || d.stepsSource === 'sync') {
+        if (d.steps !== steps) filled++
+        days[date] = { ...d, steps, stepsSource: 'sync' }
       }
-      return { ...s, days }
-    })
+    }
+    setState((s) => ({ ...s, days }))
     return filled
   }
 
