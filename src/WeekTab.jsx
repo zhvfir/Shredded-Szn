@@ -1,6 +1,7 @@
 import { useRef, useState } from 'react'
 import { WORKOUT_SHORT, STEP_GOAL, totals, mondayOf, addDays, todayISO, fromISO, fmtDay } from './db.js'
 import { getSyncConfig, setSyncConfig, clearSyncConfig, fetchSteps } from './sync.js'
+import { pushSupported, remindersOn, enableReminders, disableReminders, sendTest } from './push.js'
 
 export default function WeekTab({ store, openDay }) {
   const [weekStart, setWeekStart] = useState(mondayOf(todayISO()))
@@ -51,6 +52,7 @@ export default function WeekTab({ store, openDay }) {
         )
       })}
 
+      <RemindersCard />
       <SyncCard store={store} />
       <DataCard store={store} />
     </>
@@ -133,6 +135,67 @@ function SyncCard({ store }) {
             </div>
           </>
         )}
+      </div>
+    </section>
+  )
+}
+
+function RemindersCard() {
+  const [on, setOn] = useState(remindersOn())
+  const [busy, setBusy] = useState(false)
+  const [status, setStatus] = useState('')
+  const supported = pushSupported()
+
+  const enable = async () => {
+    setBusy(true); setStatus('')
+    try { await enableReminders(); setOn(true) }
+    catch (e) { setStatus(e.message) }
+    finally { setBusy(false) }
+  }
+  const disable = async () => {
+    setBusy(true); setStatus('')
+    try { await disableReminders(); setOn(false) }
+    catch (e) { setStatus(e.message) }
+    finally { setBusy(false) }
+  }
+  const test = async () => {
+    setBusy(true); setStatus('')
+    try { await sendTest(); setStatus('Test sent — check your notifications.') }
+    catch (e) { setStatus(e.message) }
+    finally { setBusy(false) }
+  }
+
+  return (
+    <section style={{ marginTop: 24 }}>
+      <div className="sec">Reminders</div>
+      <div className="card">
+        {!supported ? (
+          <div className="dim" style={{ fontSize: 13 }}>
+            Add the app to your Home Screen and open it from there to enable reminders.
+          </div>
+        ) : !on ? (
+          <>
+            <div className="dim" style={{ fontSize: 13, marginBottom: 10 }}>
+              Daily push reminders: Weigh-In 06:00, Daily Review 21:00, Supplements 22:00.
+            </div>
+            <button className="primary" style={{ width: '100%' }} onClick={enable} disabled={busy}>
+              {busy ? 'Enabling…' : 'Enable Reminders'}
+            </button>
+          </>
+        ) : (
+          <>
+            <ul className="supp-list" style={{ marginBottom: 10 }}>
+              <li><span>Weigh-In</span><span className="num dim" style={{ fontSize: 13 }}>06:00</span></li>
+              <li><span>Daily Review</span><span className="num dim" style={{ fontSize: 13 }}>21:00</span></li>
+              <li><span>Supplements</span><span className="num dim" style={{ fontSize: 13 }}>22:00</span></li>
+            </ul>
+            <div className="add-row" style={{ marginTop: 0 }}>
+              <button style={{ flex: 1 }} onClick={test} disabled={busy}>Send Test Notification</button>
+              <button onClick={disable} disabled={busy}>Disable</button>
+            </div>
+          </>
+        )}
+        {status && <div className="dim" style={{ fontSize: 12, marginTop: 8 }}>{status}</div>}
       </div>
     </section>
   )

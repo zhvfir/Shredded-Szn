@@ -29,3 +29,42 @@ self.addEventListener('fetch', (e) => {
     })
   )
 })
+
+// --- Push reminders ---
+// Pushes are payload-less; pick the message by the nearest scheduled time
+// (device clock, which is SGT for this user). Slots are >=60 min apart so a
+// short delivery delay still lands on the right reminder.
+self.addEventListener('push', (event) => {
+  const slots = [
+    { t: 6 * 60,  title: 'Weigh-In',     body: 'Log your morning weight before breakfast.' },
+    { t: 21 * 60, title: 'Daily Review', body: 'Log any missed meals, steps and workout.' },
+    { t: 22 * 60, title: 'Supplements',  body: 'Creatine + Magnesium Glycinate.' },
+  ]
+  const now = new Date()
+  const mins = now.getHours() * 60 + now.getMinutes()
+  let best = slots[0], bestD = Infinity
+  for (const s of slots) {
+    const d = Math.abs(s.t - mins)
+    if (d < bestD) { bestD = d; best = s }
+  }
+  event.waitUntil(
+    self.registration.showNotification(best.title, {
+      body: best.body,
+      icon: './icon-512.png',
+      badge: './icon-512.png',
+      tag: best.title,
+    })
+  )
+})
+
+self.addEventListener('notificationclick', (event) => {
+  event.notification.close()
+  event.waitUntil(
+    self.clients.matchAll({ type: 'window', includeUncontrolled: true }).then((list) => {
+      for (const c of list) {
+        if ('focus' in c) return c.focus()
+      }
+      if (self.clients.openWindow) return self.clients.openWindow('./')
+    })
+  )
+})

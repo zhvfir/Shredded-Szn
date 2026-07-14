@@ -1,0 +1,11 @@
+name = "shredded-szn-push"
+main = "src/index.js"
+compatibility_date = "2024-09-23"
+workers_dev = true
+
+[[kv_namespaces]]
+binding = "SUBS"
+id = "PLACEHOLDER_KV_ID"
+
+[triggers]
+crons = ["0 22 * * *", "0 13 * * *", "0 14 * * *"]

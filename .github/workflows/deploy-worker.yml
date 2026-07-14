@@ -1,0 +1,40 @@
+name: Deploy Push Worker
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'worker/**'
+      - '.github/workflows/deploy-worker.yml'
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: worker
+    env:
+      CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+      CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - run: npm install
+
+      - name: Ensure KV namespace exists and inject its id
+        run: |
+          # Create is idempotent-ish: ignore "already exists" errors.
+          npx wrangler kv namespace create SUBS || true
+          RAW=$(npx wrangler kv namespace list)
+          echo "$RAW"
+          ID=$(echo "$RAW" | node -e "let s='';process.stdin.on('data',d=>s+=d).on('end',()=>{const a=JSON.parse(s);const m=a.find(x=>/SUBS$/.test(x.title));process.stdout.write(m?m.id:'')})")
+          if [ -z "$ID" ]; then echo 'Could not resolve KV id'; exit 1; fi
+          echo "KV id: $ID"
+          sed -i "s/PLACEHOLDER_KV_ID/$ID/" wrangler.toml
+          grep id wrangler.toml
+
+      - name: Deploy worker
+        run: npx wrangler deploy
