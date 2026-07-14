@@ -118,7 +118,7 @@ function StepsCard({ day, date, updateDayFn }) {
           <input
             type="number"
             inputMode="numeric"
-            placeholder="steps"
+            placeholder="Steps"
             value={steps}
             onChange={(e) =>
               updateDayFn(date, () => ({

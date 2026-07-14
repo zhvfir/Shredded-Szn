@@ -8,7 +8,7 @@ export default function DateNav({ date, setDate }) {
       <span className="label">
         {isToday ? 'Today' : fmtDay(date)}
         {!isToday && (
-          <button className="today-link" onClick={() => setDate(todayISO())}>today</button>
+          <button className="today-link" onClick={() => setDate(todayISO())}>Today</button>
         )}
       </span>
       <button className="icon" onClick={() => setDate(addDays(date, 1))} aria-label="Next day">›</button>

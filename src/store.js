@@ -13,11 +13,26 @@ export function emptyDay() {
   return { foods: [], workouts: [], runNote: '', steps: null, supplements: {} }
 }
 
+// Supplement names double as storage keys; carry ticks across renames.
+const RENAMED_SUPPLEMENTS = { 'Creatine monohydrate 5g': 'Creatine' }
+
+function migrate(state) {
+  for (const day of Object.values(state.days ?? {})) {
+    for (const [oldName, newName] of Object.entries(RENAMED_SUPPLEMENTS)) {
+      if (day.supplements && oldName in day.supplements) {
+        day.supplements[newName] = day.supplements[newName] || day.supplements[oldName]
+        delete day.supplements[oldName]
+      }
+    }
+  }
+  return state
+}
+
 function load() {
   try {
     const raw = localStorage.getItem(KEY)
     if (!raw) return emptyState
-    return { ...emptyState, ...JSON.parse(raw) }
+    return migrate({ ...emptyState, ...JSON.parse(raw) })
   } catch {
     return emptyState
   }
@@ -90,11 +105,11 @@ export function useCutLog() {
 
   // Wholesale replace — import is restore, not merge.
   const replaceState = (next) =>
-    setState({
+    setState(migrate({
       weights: Array.isArray(next.weights) ? next.weights : [],
       days: next.days && typeof next.days === 'object' ? next.days : {},
       customSupplements: Array.isArray(next.customSupplements) ? next.customSupplements : [],
-    })
+    }))
 
   return {
     state,

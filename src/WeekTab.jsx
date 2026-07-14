@@ -82,7 +82,7 @@ function DataCard({ store }) {
       }
       const dayCount = Object.keys(data.days).length
       const from = data.exportedAt ? fmtDay(data.exportedAt.slice(0, 10)) : 'unknown date'
-      if (confirm(`Replace the current log with the backup from ${from}? (${dayCount} days, ${data.weights.length} weigh-ins)`)) {
+      if (confirm(`Replace the current log with the backup from ${from}? (${dayCount} days, ${data.weights.length} weigh-in${data.weights.length === 1 ? '' : 's'})`)) {
         store.replaceState(data)
       }
     } catch {

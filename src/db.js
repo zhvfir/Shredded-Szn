@@ -34,9 +34,9 @@ export const FOODS = {
 // Quick-add presets. `counted: true` overrides the buffer flag —
 // the pre-workout banana is part of the tracked 231 kcal spec.
 export const PRESETS = [
-  { name: 'Lunch — rice plate',
+  { name: 'Lunch — rice',
     items: [['rice', 200], ['chicken', 220], ['egg', 2], ['oil', 1]] },
-  { name: 'Lunch — sweet potato plate',
+  { name: 'Lunch — sweet potato',
     items: [['sweetpotato', 250], ['chicken', 220], ['egg', 2], ['oil', 1]] },
   { name: 'Dinner — rice + whey',
     items: [['rice', 200], ['chicken', 220], ['egg', 2], ['oil', 1], ['whey', 2]] },
@@ -57,7 +57,7 @@ export const WORKOUT_SHORT = {
   'Run': 'Run',
 }
 
-export const DEFAULT_SUPPLEMENTS = ['Creatine monohydrate 5g', 'Magnesium glycinate']
+export const DEFAULT_SUPPLEMENTS = ['Creatine', 'Magnesium glycinate']
 
 export function entryFromFood(key, qty, opts = {}) {
   const food = FOODS[key]
