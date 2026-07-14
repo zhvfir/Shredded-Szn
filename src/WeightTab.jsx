@@ -56,15 +56,15 @@ export default function WeightTab({ store }) {
         <div className="card">
           <WeightChart weights={weights} startDate={startDate} glideAt={glideAt} />
           <div className="dim" style={{ fontSize: 13, marginTop: 8 }}>
-            <span style={{ color: 'var(--blue)' }}>●</span> actual&nbsp;&nbsp;
-            <span className="dim">╌╌</span> target path&nbsp;&nbsp;
-            {toGo > 0 ? `${toGo.toFixed(1)} kg to go` : 'goal reached ✓'}
+            <span style={{ color: 'var(--blue)' }}>●</span> Actual&nbsp;&nbsp;
+            <span className="dim">╌╌</span> Target&nbsp;&nbsp;
+            {toGo > 0 ? `${toGo.toFixed(1)} kg to go` : 'Goal Reached ✓'}
           </div>
         </div>
       </section>
 
       <section>
-        <div className="sec">Log weight</div>
+        <div className="sec">Log Weight</div>
         <div className="card">
         <div className="add-row" style={{ marginTop: 0 }}>
           <input type="date" value={date} max={todayISO()} onChange={(e) => setDate(e.target.value)} style={{ flex: 1, width: 'auto' }} />

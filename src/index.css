@@ -35,7 +35,8 @@ body {
 #root {
   max-width: 560px;
   margin: 0 auto;
-  padding: 20px 16px calc(84px + env(safe-area-inset-bottom));
+  /* top inset keeps the header clear of the iPhone notch / Dynamic Island */
+  padding: calc(20px + env(safe-area-inset-top)) 16px calc(84px + env(safe-area-inset-bottom));
   min-height: 100vh;
 }
 

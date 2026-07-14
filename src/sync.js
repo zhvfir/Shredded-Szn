@@ -36,12 +36,12 @@ export async function fetchSteps(apiKey, oldestISO, newestISO) {
   } catch (e) {
     // fetch() only throws before a response is readable — network, CORS, or timeout
     if (e?.name === 'TimeoutError') {
-      throw new Error('intervals.icu did not respond within 15s — try again')
+      throw new Error('intervals.icu did not respond within 15s — Try again')
     }
-    throw new Error('Could not reach intervals.icu (offline, or the browser blocked the request)')
+    throw new Error('Could not reach intervals.icu (Offline, or the browser blocked the request)')
   }
   if (res.status === 401 || res.status === 403) {
-    throw new Error('intervals.icu rejected the API key — check it in Settings → Developer')
+    throw new Error('intervals.icu rejected the API key — Check it in Settings → Developer')
   }
   if (!res.ok) {
     throw new Error(`intervals.icu error (HTTP ${res.status})`)

@@ -16,7 +16,7 @@ export default function WeekTab({ store, openDay }) {
         <span className="label">{label}</span>
         <button className="icon" onClick={() => setWeekStart(addDays(weekStart, 7))} aria-label="Next week">›</button>
         {weekStart !== mondayOf(today) && (
-          <button className="icon" onClick={() => setWeekStart(mondayOf(today))}>now</button>
+          <button className="icon" onClick={() => setWeekStart(mondayOf(today))}>Now</button>
         )}
       </div>
 
@@ -96,7 +96,7 @@ function SyncCard({ store }) {
 
   return (
     <section style={{ marginTop: 24 }}>
-      <div className="sec">Garmin sync</div>
+      <div className="sec">Garmin Sync</div>
       <div className="card">
         {!cfg.apiKey ? (
           <>
@@ -121,9 +121,9 @@ function SyncCard({ store }) {
           <>
             <div className="add-row" style={{ marginTop: 0 }}>
               <button className="primary" style={{ flex: 1 }} onClick={syncNow} disabled={busy}>
-                {busy ? 'Syncing…' : 'Sync steps now'}
+                {busy ? 'Syncing…' : 'Sync Steps Now'}
               </button>
-              <button onClick={removeKey}>Remove key</button>
+              <button onClick={removeKey}>Remove Key</button>
             </div>
             {status && (
               <div className="dim" style={{ fontSize: 12, marginTop: 8 }}>{status}</div>
@@ -178,8 +178,8 @@ function DataCard({ store }) {
       <div className="sec">Data</div>
       <div className="card">
         <div className="add-row" style={{ marginTop: 0 }}>
-          <button style={{ flex: 1 }} onClick={exportBackup}>Export backup</button>
-          <button style={{ flex: 1 }} onClick={() => fileRef.current?.click()}>Import backup</button>
+          <button style={{ flex: 1 }} onClick={exportBackup}>Export Backup</button>
+          <button style={{ flex: 1 }} onClick={() => fileRef.current?.click()}>Import Backup</button>
         </div>
         <input
           ref={fileRef}
@@ -190,7 +190,7 @@ function DataCard({ store }) {
           aria-label="Import backup file"
         />
         <div className="dim" style={{ fontSize: 12, marginTop: 8 }}>
-          Your log lives only on this device. Export a backup now and then — importing replaces everything with the backup.
+          Your log lives only on this device. Export a backup now and then — Importing replaces everything with the backup.
         </div>
         <div className="dim" style={{ fontSize: 11, marginTop: 6 }}>
           Version {__APP_VERSION__}

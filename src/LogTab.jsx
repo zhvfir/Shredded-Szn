@@ -62,7 +62,7 @@ export default function LogTab({ store, date, setDate }) {
       <DateNav date={date} setDate={setDate} />
 
       <section>
-        <div className="sec">Quick add</div>
+        <div className="sec">Quick Add</div>
         <div className="preset-grid">
           {PRESETS.map((p) => (
             <button key={p.name} onClick={() => addPreset(p)}>
@@ -73,13 +73,13 @@ export default function LogTab({ store, date, setDate }) {
         </div>
         {prevLogged && (
           <button style={{ width: '100%', marginTop: 10 }} onClick={copyPrevDay}>
-            Copy {fmtDay(prevLogged)}’s food log →
+            Copy {fmtDay(prevLogged)}’s Food Log →
           </button>
         )}
       </section>
 
       <section>
-        <div className="sec">Add food</div>
+        <div className="sec">Add Food</div>
         <div className="card">
           <div className="add-row" style={{ marginTop: 0 }}>
             <select value={sel} onChange={(e) => setSel(e.target.value)} aria-label="Food">
@@ -101,12 +101,12 @@ export default function LogTab({ store, date, setDate }) {
 
           <div style={{ marginTop: 10 }}>
             <button className="ghost" style={{ padding: '6px 0' }} onClick={() => setShowCustom(!showCustom)}>
-              {showCustom ? '− Custom food' : '+ Custom food'}
+              {showCustom ? '− Custom Food' : '+ Custom Food'}
             </button>
             {showCustom && (
               <div className="custom-grid">
                 <input
-                  name="cname" placeholder="Name (e.g. chicken rice)"
+                  name="cname" placeholder="Name (e.g. Chicken Rice)"
                   value={custom.name}
                   onChange={(e) => setCustom({ ...custom, name: e.target.value })}
                 />
@@ -119,7 +119,7 @@ export default function LogTab({ store, date, setDate }) {
                   />
                 ))}
                 <button className="primary" style={{ gridColumn: '1 / -1' }} onClick={addCustom}>
-                  Add custom food
+                  Add Custom Food
                 </button>
               </div>
             )}

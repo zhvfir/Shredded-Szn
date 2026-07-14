@@ -14,7 +14,10 @@ export function emptyDay() {
 }
 
 // Supplement names double as storage keys; carry ticks across renames.
-const RENAMED_SUPPLEMENTS = { 'Creatine monohydrate 5g': 'Creatine' }
+const RENAMED_SUPPLEMENTS = {
+  'Creatine monohydrate 5g': 'Creatine',
+  'Magnesium glycinate': 'Magnesium Glycinate',
+}
 
 function migrate(state) {
   for (const day of Object.values(state.days ?? {})) {

@@ -61,7 +61,7 @@ function MacroDashboard({ day, goLog }) {
         })}
       </div>
       <button style={{ marginTop: 10, width: '100%' }} onClick={goLog}>
-        Log food →
+        Log Food →
       </button>
     </section>
   )
@@ -94,7 +94,7 @@ function WorkoutCard({ day, date, updateDayFn }) {
         {day.workouts.includes('Run') && (
           <div className="run-note">
             <input
-              placeholder="Run type — easy 5k, intervals, 4x4 Norwegian…"
+              placeholder="Run Type — Easy 5k, Intervals, 4x4 Norwegian…"
               value={day.runNote}
               onChange={(e) => updateDayFn(date, () => ({ runNote: e.target.value }))}
             />
@@ -181,7 +181,7 @@ function SupplementsCard({ day, date, updateDayFn, allSupplements, addSupplement
         </ul>
         <div className="add-row">
           <input
-            placeholder="Add supplement…"
+            placeholder="Add Supplement…"
             value={newSupp}
             onChange={(e) => setNewSupp(e.target.value)}
             onKeyDown={(e) => e.key === 'Enter' && add()}
