@@ -41,7 +41,7 @@ export const PRESETS = [
   { name: 'New Multi — 4 Pieces', items: [['multi', 4]] },
   { name: '½ Roasted Chicken', items: [['roastchicken', 1]] },
   { name: 'Eggs — 2', items: [['egg', 2]] },
-  { name: 'Pre-workout Bowl',
+  { name: 'Pre-workout',
     items: [['ricecake', 3], ['banana', 1, { counted: true }], ['honey', 1]] },
 ]
 

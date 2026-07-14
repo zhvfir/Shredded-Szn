@@ -94,7 +94,7 @@ function WorkoutCard({ day, date, updateDayFn }) {
         {day.workouts.includes('Run') && (
           <div className="run-note">
             <input
-              placeholder="Run Type — Easy 5k, Intervals, 4x4 Norwegian…"
+              placeholder="Run Type — Easy 5K, Intervals, 4x4 Norwegian…"
               value={day.runNote}
               onChange={(e) => updateDayFn(date, () => ({ runNote: e.target.value }))}
             />

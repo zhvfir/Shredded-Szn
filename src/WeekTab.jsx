@@ -201,9 +201,9 @@ function DataCard({ store }) {
 }
 
 // Display-only: run notes are free text; show them formally without
-// changing what was typed.
+// changing what was typed. Distances use capital K (5k → 5K).
 function titleCase(s) {
-  return s.replace(/\b[a-z]/g, (c) => c.toUpperCase())
+  return s.replace(/\b[a-z]/g, (c) => c.toUpperCase()).replace(/(\d)k\b/gi, '$1K')
 }
 
 function fmtShort(iso) {
