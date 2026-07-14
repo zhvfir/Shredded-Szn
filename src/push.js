@@ -1,7 +1,7 @@
 // Push reminders — talks to the Cloudflare Worker push server.
 // PUSH_BASE is filled in after the worker's first deploy (its workers.dev
 // subdomain is only known then).
-const PUSH_BASE = 'https://shredded-szn-push.PLACEHOLDER.workers.dev'
+const PUSH_BASE = 'https://shredded-szn-push.zhafiriduan.workers.dev'
 const FLAG = 'cutlog-push'
 
 export function pushSupported() {
