@@ -94,6 +94,24 @@ export function useCutLog() {
       customSupplements: s.customSupplements.filter((n) => n !== name),
     }))
 
+  // Synced steps fill empty days and refresh sync-sourced days,
+  // but never overwrite a manually typed value.
+  const applySyncedSteps = (rows) => {
+    let filled = 0
+    setState((s) => {
+      const days = { ...s.days }
+      for (const { date, steps } of rows) {
+        const d = { ...emptyDay(), ...days[date] }
+        if (d.steps == null || d.stepsSource === 'sync') {
+          if (d.steps !== steps) filled++
+          days[date] = { ...d, steps, stepsSource: 'sync' }
+        }
+      }
+      return { ...s, days }
+    })
+    return filled
+  }
+
   const exportJSON = () => ({
     app: 'shredded-szn',
     version: 1,
@@ -119,6 +137,7 @@ export function useCutLog() {
     addFoods,
     removeFood,
     updateFood,
+    applySyncedSteps,
     setWeight,
     allSupplements,
     addSupplement,

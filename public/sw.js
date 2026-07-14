@@ -7,6 +7,8 @@ self.addEventListener('activate', (e) => e.waitUntil(self.clients.claim()))
 
 self.addEventListener('fetch', (e) => {
   if (e.request.method !== 'GET') return
+  // Leave cross-origin requests (e.g. intervals.icu API) untouched
+  if (new URL(e.request.url).origin !== self.location.origin) return
   e.respondWith(
     caches.open(CACHE).then(async (cache) => {
       try {

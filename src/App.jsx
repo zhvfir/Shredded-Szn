@@ -1,6 +1,7 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { useCutLog } from './store.js'
-import { todayISO } from './db.js'
+import { todayISO, addDays } from './db.js'
+import { getSyncConfig, setSyncConfig, fetchSteps } from './sync.js'
 import TodayTab from './TodayTab.jsx'
 import LogTab from './LogTab.jsx'
 import WeightTab from './WeightTab.jsx'
@@ -42,6 +43,20 @@ export default function App() {
     setDate(d)
     setTab('today')
   }
+
+  // Silent background sync on launch, at most hourly; failures only
+  // surface in the Sync card's status, never block the app.
+  useEffect(() => {
+    const cfg = getSyncConfig()
+    if (!cfg.apiKey || Date.now() - (cfg.lastSync ?? 0) < 3600_000) return
+    fetchSteps(cfg.apiKey, addDays(todayISO(), -14), todayISO())
+      .then((rows) => {
+        const filled = store.applySyncedSteps(rows)
+        setSyncConfig({ lastSync: Date.now(), lastStatus: `Auto-synced — ${filled} day${filled === 1 ? '' : 's'} updated` })
+      })
+      .catch((e) => setSyncConfig({ lastStatus: e.message }))
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
 
   return (
     <>

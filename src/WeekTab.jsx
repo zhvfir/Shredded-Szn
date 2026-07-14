@@ -1,5 +1,6 @@
 import { useRef, useState } from 'react'
 import { WORKOUT_SHORT, STEP_GOAL, totals, mondayOf, addDays, todayISO, fromISO, fmtDay } from './db.js'
+import { getSyncConfig, setSyncConfig, clearSyncConfig, fetchSteps } from './sync.js'
 
 export default function WeekTab({ store, openDay }) {
   const [weekStart, setWeekStart] = useState(mondayOf(todayISO()))
@@ -50,8 +51,90 @@ export default function WeekTab({ store, openDay }) {
         )
       })}
 
+      <SyncCard store={store} />
       <DataCard store={store} />
     </>
+  )
+}
+
+function SyncCard({ store }) {
+  const [cfg, setCfg] = useState(getSyncConfig)
+  const [keyInput, setKeyInput] = useState('')
+  const [status, setStatus] = useState(cfg.lastStatus ?? '')
+  const [busy, setBusy] = useState(false)
+
+  const saveKey = () => {
+    const apiKey = keyInput.trim()
+    if (!apiKey) return
+    setCfg(setSyncConfig({ apiKey }))
+    setKeyInput('')
+  }
+
+  const removeKey = () => {
+    if (!confirm('Remove the intervals.icu API key from this device?')) return
+    clearSyncConfig()
+    setCfg({})
+    setStatus('')
+  }
+
+  const syncNow = async () => {
+    setBusy(true)
+    setStatus('Syncing…')
+    try {
+      const rows = await fetchSteps(cfg.apiKey, addDays(todayISO(), -14), todayISO())
+      const filled = store.applySyncedSteps(rows)
+      const msg = `Last sync: ${fmtDay(todayISO())} — ${filled} day${filled === 1 ? '' : 's'} updated`
+      setStatus(msg)
+      setCfg(setSyncConfig({ lastSync: Date.now(), lastStatus: msg }))
+    } catch (e) {
+      setStatus(e.message)
+      setSyncConfig({ lastStatus: e.message })
+    } finally {
+      setBusy(false)
+    }
+  }
+
+  return (
+    <section style={{ marginTop: 24 }}>
+      <div className="sec">Garmin sync</div>
+      <div className="card">
+        {!cfg.apiKey ? (
+          <>
+            <div className="dim" style={{ fontSize: 13, marginBottom: 10 }}>
+              Auto-fill daily steps from your Garmin via intervals.icu.
+              Connect Garmin at intervals.icu, then paste your API key
+              (Settings → Developer) here.
+            </div>
+            <div className="add-row" style={{ marginTop: 0 }}>
+              <input
+                type="password"
+                placeholder="intervals.icu API key"
+                value={keyInput}
+                onChange={(e) => setKeyInput(e.target.value)}
+                onKeyDown={(e) => e.key === 'Enter' && saveKey()}
+                style={{ flex: 1, width: 'auto' }}
+              />
+              <button className="primary" onClick={saveKey}>Save</button>
+            </div>
+          </>
+        ) : (
+          <>
+            <div className="add-row" style={{ marginTop: 0 }}>
+              <button className="primary" style={{ flex: 1 }} onClick={syncNow} disabled={busy}>
+                {busy ? 'Syncing…' : 'Sync steps now'}
+              </button>
+              <button onClick={removeKey}>Remove key</button>
+            </div>
+            {status && (
+              <div className="dim" style={{ fontSize: 12, marginTop: 8 }}>{status}</div>
+            )}
+            <div className="dim" style={{ fontSize: 12, marginTop: 4 }}>
+              Steps you typed in yourself are never overwritten.
+            </div>
+          </>
+        )}
+      </div>
+    </section>
   )
 }
 

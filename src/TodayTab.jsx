@@ -123,6 +123,7 @@ function StepsCard({ day, date, updateDayFn }) {
             onChange={(e) =>
               updateDayFn(date, () => ({
                 steps: e.target.value === '' ? null : parseInt(e.target.value, 10) || 0,
+                stepsSource: e.target.value === '' ? null : 'manual',
               }))
             }
             aria-label="Steps"
