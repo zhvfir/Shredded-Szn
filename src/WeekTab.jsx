@@ -39,7 +39,7 @@ export default function WeekTab({ store, openDay }) {
             <span className="tags">
               {day.workouts.map((w) => (
                 <span key={w} className="chip small">
-                  {w === 'Run' && day.runNote ? `Run · ${day.runNote}` : WORKOUT_SHORT[w]}
+                  {w === 'Run' && day.runNote ? `Run · ${titleCase(day.runNote)}` : WORKOUT_SHORT[w]}
                 </span>
               ))}
               {t.kcal > 0 && <span className="chip small dim">{Math.round(t.kcal / 5) * 5} kcal</span>}
@@ -198,6 +198,12 @@ function DataCard({ store }) {
       </div>
     </section>
   )
+}
+
+// Display-only: run notes are free text; show them formally without
+// changing what was typed.
+function titleCase(s) {
+  return s.replace(/\b[a-z]/g, (c) => c.toUpperCase())
 }
 
 function fmtShort(iso) {
