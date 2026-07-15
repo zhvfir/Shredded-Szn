@@ -8,12 +8,8 @@ import WeightTab from './WeightTab.jsx'
 import WeekTab from './WeekTab.jsx'
 import SettingsView from './SettingsView.jsx'
 
-// Lightning mark for the settings button (placeholder until the logo art
-// is wired in).
 const LogoMark = () => (
-  <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
-    <path d="M13.5 2 4 13.5h6L9 22l10.5-12.5h-6L13.5 2z" />
-  </svg>
+  <img src={`${import.meta.env.BASE_URL}logo-mark.png`} alt="" aria-hidden="true" />
 )
 
 const ICONS = {
