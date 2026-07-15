@@ -1,9 +1,15 @@
 // Network-first with cache fallback: the app keeps working offline
 // after the first successful load. Data itself lives in localStorage.
-const CACHE = 'cutlog-shell-v1'
+const CACHE = 'cutlog-shell-v2'
 
 self.addEventListener('install', () => self.skipWaiting())
-self.addEventListener('activate', (e) => e.waitUntil(self.clients.claim()))
+self.addEventListener('activate', (e) =>
+  e.waitUntil(
+    caches.keys()
+      .then((names) => Promise.all(names.filter((n) => n !== CACHE).map((n) => caches.delete(n))))
+      .then(() => self.clients.claim())
+  )
+)
 
 self.addEventListener('fetch', (e) => {
   if (e.request.method !== 'GET') return
