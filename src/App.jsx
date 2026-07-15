@@ -6,6 +6,15 @@ import TodayTab from './TodayTab.jsx'
 import LogTab from './LogTab.jsx'
 import WeightTab from './WeightTab.jsx'
 import WeekTab from './WeekTab.jsx'
+import SettingsView from './SettingsView.jsx'
+
+// Lightning mark for the settings button (placeholder until the logo art
+// is wired in).
+const LogoMark = () => (
+  <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+    <path d="M13.5 2 4 13.5h6L9 22l10.5-12.5h-6L13.5 2z" />
+  </svg>
+)
 
 const ICONS = {
   today: (
@@ -38,6 +47,7 @@ export default function App() {
   const store = useCutLog()
   const [tab, setTab] = useState('today')
   const [date, setDate] = useState(todayISO())
+  const [settingsOpen, setSettingsOpen] = useState(false)
 
   const openDay = (d) => {
     setDate(d)
@@ -58,10 +68,24 @@ export default function App() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
+  if (settingsOpen) {
+    return (
+      <>
+        <div className="header">
+          <h1>Shredded Szn</h1>
+        </div>
+        <SettingsView store={store} onBack={() => setSettingsOpen(false)} />
+      </>
+    )
+  }
+
   return (
     <>
       <div className="header">
         <h1>Shredded Szn</h1>
+        <button className="logo-btn" onClick={() => setSettingsOpen(true)} aria-label="Settings">
+          <LogoMark />
+        </button>
       </div>
 
       {tab === 'today' && (

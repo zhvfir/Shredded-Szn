@@ -1,4 +1,4 @@
-/* GitHub dark (Primer) tokens */
+/* Dark surfaces (GitHub Primer) + SHRDD electric-blue accent */
 :root {
   --bg: #0D1117;
   --surface: #161B22;
@@ -8,8 +8,8 @@
   --text-dim: #8B949E;
   --on-bg: #E6EDF3;
   --on-bg-dim: #8B949E;
-  --blue: #58A6FF;
-  --blue-fill: #1F6FEB;
+  --blue: #4CA3FF;
+  --blue-fill: #1E80E6;
   --amber: #D29922;
   --green: #3FB950;
   --red: #F85149;
@@ -103,8 +103,18 @@ input::placeholder, textarea::placeholder { color: var(--text-dim); }
 input:focus, select:focus, textarea:focus { outline: none; border-color: var(--blue); background: var(--surface); }
 
 /* --- header / date nav --- */
-.header { display: flex; align-items: baseline; justify-content: space-between; margin-bottom: 18px; }
+.header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 18px; }
 .header .goal { font-size: 13px; color: var(--on-bg-dim); font-variant-numeric: tabular-nums; }
+.logo-btn {
+  background: none; border: none; padding: 6px;
+  width: 40px; height: 40px; border-radius: 10px;
+  color: var(--blue); cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+}
+.logo-btn:active { background: var(--surface-alt); }
+.logo-btn svg { width: 24px; height: 24px; }
+.settings-head { display: flex; align-items: center; gap: 8px; margin-bottom: 18px; }
+.settings-head .label { flex: 1; text-align: center; font-size: 17px; font-weight: 600; color: var(--on-bg); }
 .date-nav { display: flex; align-items: center; gap: 8px; margin-bottom: 18px; }
 .date-nav .label { flex: 1; text-align: center; font-size: 17px; font-weight: 600; color: var(--on-bg); }
 .date-nav .today-link { font-size: 13px; color: var(--on-bg); background: none; border: none; padding: 2px 6px; font-weight: 600; text-decoration: underline; }
