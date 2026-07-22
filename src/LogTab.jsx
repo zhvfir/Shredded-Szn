@@ -1,5 +1,6 @@
 import { useState } from 'react'
-import { FOODS, PRESETS, entryFromFood, addDays, fmtDay } from './db.js'
+import { FOODS, PRESETS, entryFromFood, entryFromPreset, entryFromMacros, addDays, fmtDay } from './db.js'
+import { lookupFood } from './food.js'
 import DateNav from './DateNav.jsx'
 
 const r5 = (x) => Math.round(x / 5) * 5
@@ -34,7 +35,7 @@ export default function LogTab({ store, date, setDate }) {
   }
 
   const addPreset = (preset) => {
-    store.addFoods(date, preset.items.map(([key, q, opts]) => entryFromFood(key, q, opts)))
+    store.addFoods(date, [entryFromPreset(preset)])
   }
 
   const addCustom = () => {
@@ -54,12 +55,11 @@ export default function LogTab({ store, date, setDate }) {
     setShowCustom(false)
   }
 
-  const presetKcal = (preset) =>
-    r5(preset.items.reduce((sum, [key, q]) => sum + FOODS[key].kcal * q, 0))
-
   return (
     <>
       <DateNav date={date} setDate={setDate} />
+
+      <AiFoodSearch onLog={(entry) => store.addFoods(date, [entry])} />
 
       <section>
         <div className="sec">Quick Add</div>
@@ -67,7 +67,7 @@ export default function LogTab({ store, date, setDate }) {
           {PRESETS.map((p) => (
             <button key={p.name} onClick={() => addPreset(p)}>
               {p.name}
-              <span className="pk">~{presetKcal(p)} kcal</span>
+              <span className="pk">~{p.kcal} kcal</span>
             </button>
           ))}
         </div>
@@ -147,6 +147,104 @@ export default function LogTab({ store, date, setDate }) {
         </section>
       )}
     </>
+  )
+}
+
+// AI food lookup — type a description, get an estimated macro card you can
+// tweak before logging. The API call only fires on submit (never per
+// keystroke); recent lookups are cached in localStorage by food.js.
+function AiFoodSearch({ onLog }) {
+  const [query, setQuery] = useState('')
+  const [busy, setBusy] = useState(false)
+  const [error, setError] = useState('')
+  const [result, setResult] = useState(null) // editable { name, kcal, p, c, f, confidence, notes }
+
+  const search = async () => {
+    const q = query.trim()
+    if (!q || busy) return
+    setBusy(true); setError(''); setResult(null)
+    try {
+      const food = await lookupFood(q)
+      setResult({
+        name: food.name ?? q,
+        kcal: Math.round(Number(food.kcal) || 0),
+        p: Math.round(Number(food.protein) || 0),
+        c: Math.round(Number(food.carbs) || 0),
+        f: Math.round(Number(food.fat) || 0),
+        confidence: food.confidence ?? 'medium',
+        notes: food.notes ?? '',
+      })
+    } catch (e) {
+      setError(e.message)
+    } finally {
+      setBusy(false)
+    }
+  }
+
+  const edit = (patch) => setResult((r) => ({ ...r, ...patch }))
+
+  const confirm = () => {
+    onLog(entryFromMacros({
+      name: result.name || 'Food',
+      kcal: result.kcal, p: result.p, c: result.c, f: result.f,
+    }))
+    setResult(null)
+    setQuery('')
+    setError('')
+  }
+
+  return (
+    <section>
+      <div className="sec">Describe a Food</div>
+      <div className="card">
+        <div className="add-row" style={{ marginTop: 0 }}>
+          <input
+            placeholder="Search or describe a food…"
+            value={query}
+            onChange={(e) => setQuery(e.target.value)}
+            onKeyDown={(e) => e.key === 'Enter' && search()}
+            style={{ flex: 1, width: 'auto' }}
+            aria-label="Describe a food"
+          />
+          <button className="primary" onClick={search} disabled={busy || !query.trim()}>
+            {busy ? '…' : 'Estimate'}
+          </button>
+        </div>
+        {error && <div className="dim" style={{ fontSize: 12, marginTop: 8, color: 'var(--red)' }}>{error}</div>}
+
+        {result && (
+          <div className="ai-card">
+            <div className="ai-head">
+              <input
+                className="ai-name"
+                value={result.name}
+                onChange={(e) => edit({ name: e.target.value })}
+                aria-label="Food name"
+              />
+              <span className={`conf conf-${result.confidence}`}>{result.confidence}</span>
+            </div>
+            <div className="ai-macros">
+              {[['kcal', 'kcal'], ['p', 'P g'], ['c', 'C g'], ['f', 'F g']].map(([k, label]) => (
+                <label key={k}>
+                  <input
+                    type="number" inputMode="numeric"
+                    value={result[k]}
+                    onChange={(e) => edit({ [k]: e.target.value === '' ? '' : Number(e.target.value) })}
+                    aria-label={label}
+                  />
+                  <span>{label}</span>
+                </label>
+              ))}
+            </div>
+            {result.notes && <div className="dim" style={{ fontSize: 12, marginTop: 8 }}>{result.notes}</div>}
+            <div className="add-row">
+              <button className="primary" style={{ flex: 1 }} onClick={confirm}>Log It</button>
+              <button onClick={() => setResult(null)}>Dismiss</button>
+            </div>
+          </div>
+        )}
+      </div>
+    </section>
   )
 }
 

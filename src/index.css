@@ -316,3 +316,65 @@ input:focus, select:focus, textarea:focus { outline: none; border-color: var(--b
 .c-amber { color: var(--amber); }
 .c-red { color: var(--red); }
 .c-blue { color: var(--blue); }
+
+/* --- goal reached banner (Today) --- */
+.goal-banner {
+  width: 100%;
+  text-align: left;
+  background: color-mix(in srgb, var(--green) 16%, var(--surface));
+  color: var(--text);
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--green) 45%, transparent);
+  border-radius: 14px;
+  padding: 13px 15px;
+  font-size: 15px;
+  font-weight: 500;
+  margin-bottom: 18px;
+}
+
+/* --- goal & targets (Settings) --- */
+.goal-grid { display: flex; flex-direction: column; gap: 12px; }
+.goal-grid label,
+.macro-inputs label {
+  display: flex; align-items: center; justify-content: space-between;
+  gap: 12px; font-size: 15px;
+}
+.in-unit { display: inline-flex; align-items: center; gap: 6px; color: var(--text-dim); font-size: 14px; }
+.in-unit input { width: 96px; flex: none; text-align: right; }
+.goal-grid input[type='date'] { width: 170px; flex: none; }
+
+.goal-target { margin-top: 16px; padding-top: 16px; border-top: 1px solid var(--surface-alt); }
+.goal-target-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px; }
+.goal-target-head > span { font-size: 15px; font-weight: 500; }
+.link-toggle {
+  background: none; border: none; padding: 2px 4px;
+  color: var(--blue); font-size: 13px; font-weight: 600;
+}
+.auto-val { font-size: 16px; font-weight: 600; }
+.auto-val .dim { font-weight: 400; font-size: 13px; }
+.macro-inputs { display: flex; flex-direction: column; gap: 10px; }
+.macro-inputs .in-unit input { width: 80px; }
+
+/* --- AI food estimate card (Log) --- */
+.ai-card {
+  margin-top: 14px;
+  background: var(--surface-alt);
+  border-radius: 14px;
+  padding: 14px;
+  box-shadow: inset 0 0 0 1px var(--border);
+}
+.ai-head { display: flex; align-items: center; gap: 10px; }
+.ai-name {
+  flex: 1; width: auto; font-size: 16px; font-weight: 600;
+  background: var(--surface); padding: 9px 11px;
+}
+.conf {
+  flex: none; font-size: 11px; font-weight: 700; text-transform: uppercase;
+  letter-spacing: 0.04em; padding: 4px 9px; border-radius: 999px;
+}
+.conf-high { color: var(--green); background: color-mix(in srgb, var(--green) 15%, transparent); }
+.conf-medium { color: var(--amber); background: color-mix(in srgb, var(--amber) 15%, transparent); }
+.conf-low { color: var(--red); background: color-mix(in srgb, var(--red) 15%, transparent); }
+.ai-macros { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; margin-top: 12px; }
+.ai-macros label { display: flex; flex-direction: column; align-items: center; gap: 4px; }
+.ai-macros input { text-align: center; padding: 9px 6px; background: var(--surface); }
+.ai-macros span { font-size: 11px; font-weight: 600; color: var(--text-dim); text-transform: uppercase; letter-spacing: 0.03em; }

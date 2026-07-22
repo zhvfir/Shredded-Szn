@@ -85,10 +85,10 @@ export default function App() {
       </div>
 
       {tab === 'today' && (
-        <TodayTab store={store} date={date} setDate={setDate} goLog={() => setTab('log')} />
+        <TodayTab store={store} date={date} setDate={setDate} goLog={() => setTab('log')} openSettings={() => setSettingsOpen(true)} />
       )}
       {tab === 'log' && <LogTab store={store} date={date} setDate={setDate} />}
-      {tab === 'weight' && <WeightTab store={store} />}
+      {tab === 'weight' && <WeightTab store={store} openSettings={() => setSettingsOpen(true)} />}
       {tab === 'week' && <WeekTab store={store} openDay={openDay} />}
 
       <nav className="tabbar">

@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { DEFAULT_SUPPLEMENTS } from './db.js'
+import { DEFAULT_SUPPLEMENTS, DEFAULT_SETTINGS, LEGACY_SEED, effectiveTargets } from './db.js'
 
 const KEY = 'cutlog-v1'
 
@@ -7,6 +7,7 @@ const emptyState = {
   weights: [],           // [{ date, kg }] kept sorted by date
   days: {},              // date -> { foods: [], workouts: [], runNote: '', steps: null, supplements: {} }
   customSupplements: [], // names appended to DEFAULT_SUPPLEMENTS
+  settings: DEFAULT_SETTINGS, // goal + targets (see db.js)
 }
 
 export function emptyDay() {
@@ -19,7 +20,11 @@ const RENAMED_SUPPLEMENTS = {
   'Magnesium glycinate': 'Magnesium Glycinate',
 }
 
-function migrate(state) {
+// `hadSettings` = the incoming save already carried a settings object. When it
+// didn't (an upgrade from the hard-coded-target build, or a v1 backup) we seed
+// from the old numbers so the live app keeps its goal. A truly fresh install
+// never reaches here — it gets DEFAULT_SETTINGS (nulls) and the setup prompt.
+function migrate(state, hadSettings) {
   for (const day of Object.values(state.days ?? {})) {
     for (const [oldName, newName] of Object.entries(RENAMED_SUPPLEMENTS)) {
       if (day.supplements && oldName in day.supplements) {
@@ -28,6 +33,9 @@ function migrate(state) {
       }
     }
   }
+  state.settings = hadSettings
+    ? { ...DEFAULT_SETTINGS, ...state.settings }
+    : { ...DEFAULT_SETTINGS, ...LEGACY_SEED }
   return state
 }
 
@@ -35,7 +43,8 @@ function load() {
   try {
     const raw = localStorage.getItem(KEY)
     if (!raw) return emptyState
-    return migrate({ ...emptyState, ...JSON.parse(raw) })
+    const parsed = JSON.parse(raw)
+    return migrate({ ...emptyState, ...parsed }, parsed.settings != null)
   } catch {
     return emptyState
   }
@@ -82,6 +91,12 @@ export function useCutLog() {
       return { ...s, weights }
     })
 
+  const settings = state.settings ?? DEFAULT_SETTINGS
+  const targets = effectiveTargets(settings)
+
+  const updateSettings = (patch) =>
+    setState((s) => ({ ...s, settings: { ...DEFAULT_SETTINGS, ...s.settings, ...patch } }))
+
   const allSupplements = () => [...DEFAULT_SUPPLEMENTS, ...state.customSupplements]
 
   const addSupplement = (name) =>
@@ -117,11 +132,12 @@ export function useCutLog() {
 
   const exportJSON = () => ({
     app: 'shredded-szn',
-    version: 1,
+    version: 2,
     exportedAt: new Date().toISOString(),
     weights: state.weights,
     days: state.days,
     customSupplements: state.customSupplements,
+    settings: state.settings,
   })
 
   // Wholesale replace — import is restore, not merge.
@@ -130,10 +146,14 @@ export function useCutLog() {
       weights: Array.isArray(next.weights) ? next.weights : [],
       days: next.days && typeof next.days === 'object' ? next.days : {},
       customSupplements: Array.isArray(next.customSupplements) ? next.customSupplements : [],
-    }))
+      settings: next.settings && typeof next.settings === 'object' ? next.settings : undefined,
+    }, next.settings != null && typeof next.settings === 'object'))
 
   return {
     state,
+    settings,
+    targets,
+    updateSettings,
     getDay,
     updateDay,
     updateDayFn,

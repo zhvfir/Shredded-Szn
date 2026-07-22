@@ -1,5 +1,5 @@
 import { useRef, useState } from 'react'
-import { addDays, todayISO, fmtDay } from './db.js'
+import { addDays, todayISO, fmtDay, suggestKcal, suggestMacros } from './db.js'
 import { getSyncConfig, setSyncConfig, clearSyncConfig, fetchSteps } from './sync.js'
 import { pushSupported, remindersOn, enableReminders, disableReminders, sendTest } from './push.js'
 
@@ -11,10 +11,139 @@ export default function SettingsView({ store, onBack }) {
         <span className="label">Settings</span>
         <span style={{ width: 40 }} />
       </div>
+      <GoalCard store={store} />
       <RemindersCard />
       <SyncCard store={store} />
       <DataCard store={store} />
     </>
+  )
+}
+
+function GoalCard({ store }) {
+  const s = store.settings
+  const [form, setForm] = useState(() => ({
+    startKg: s.startKg ?? '',
+    goalKg: s.goalKg ?? '',
+    goalDate: s.goalDate ?? '',
+    kcalAuto: s.kcalTarget == null,
+    kcalTarget: s.kcalTarget ?? '',
+    macroAuto: s.macros == null,
+    p: s.macros?.p ?? '',
+    c: s.macros?.c ?? '',
+    f: s.macros?.f ?? '',
+  }))
+  const [saved, setSaved] = useState(false)
+
+  const set = (patch) => { setForm((f) => ({ ...f, ...patch })); setSaved(false) }
+
+  // Live estimate from whatever's typed, for the "Auto" previews.
+  const draft = {
+    ...s,
+    startKg: parseFloat(form.startKg) || s.startKg,
+    goalKg: parseFloat(form.goalKg) || s.goalKg,
+    goalDate: form.goalDate || s.goalDate,
+    startDate: s.startDate ?? todayISO(),
+  }
+  const estKcal = suggestKcal(draft)
+  const estMacros = suggestMacros(draft, form.kcalAuto ? estKcal : (parseFloat(form.kcalTarget) || estKcal))
+
+  const save = () => {
+    const startKg = parseFloat(form.startKg)
+    const goalKg = parseFloat(form.goalKg)
+    if (!startKg || !goalKg || !form.goalDate) return
+    // Re-anchor the glide path to today whenever the current weight changes.
+    const startDate = startKg !== s.startKg ? todayISO() : (s.startDate ?? todayISO())
+    store.updateSettings({
+      startKg,
+      startDate,
+      goalKg,
+      goalDate: form.goalDate,
+      kcalTarget: form.kcalAuto ? null : (parseFloat(form.kcalTarget) || null),
+      macros: form.macroAuto ? null : {
+        p: parseFloat(form.p) || 0,
+        c: parseFloat(form.c) || 0,
+        f: parseFloat(form.f) || 0,
+      },
+    })
+    setSaved(true)
+  }
+
+  return (
+    <section>
+      <div className="sec">Goal &amp; Targets</div>
+      <div className="card">
+        <div className="goal-grid">
+          <label>Current weight
+            <span className="in-unit">
+              <input type="number" inputMode="decimal" step="0.1" value={form.startKg}
+                onChange={(e) => set({ startKg: e.target.value })} /> kg
+            </span>
+          </label>
+          <label>Goal weight
+            <span className="in-unit">
+              <input type="number" inputMode="decimal" step="0.1" value={form.goalKg}
+                onChange={(e) => set({ goalKg: e.target.value })} /> kg
+            </span>
+          </label>
+          <label>Goal date
+            <input type="date" value={form.goalDate} min={todayISO()}
+              onChange={(e) => set({ goalDate: e.target.value })} />
+          </label>
+        </div>
+
+        <div className="goal-target">
+          <div className="goal-target-head">
+            <span>Daily calories</span>
+            <button className="link-toggle" onClick={() => set({ kcalAuto: !form.kcalAuto })}>
+              {form.kcalAuto ? 'Set manually' : 'Use auto'}
+            </button>
+          </div>
+          {form.kcalAuto ? (
+            <div className="auto-val num">{estKcal} kcal <span className="dim">· estimated</span></div>
+          ) : (
+            <span className="in-unit">
+              <input type="number" inputMode="numeric" value={form.kcalTarget}
+                placeholder={String(estKcal)}
+                onChange={(e) => set({ kcalTarget: e.target.value })} /> kcal
+            </span>
+          )}
+        </div>
+
+        <div className="goal-target">
+          <div className="goal-target-head">
+            <span>Daily macros</span>
+            <button className="link-toggle" onClick={() => set({ macroAuto: !form.macroAuto })}>
+              {form.macroAuto ? 'Set manually' : 'Use auto'}
+            </button>
+          </div>
+          {form.macroAuto ? (
+            <div className="auto-val num">
+              {estMacros.p}P · {estMacros.c}C · {estMacros.f}F <span className="dim">g · estimated</span>
+            </div>
+          ) : (
+            <div className="macro-inputs">
+              {[['p', 'Protein'], ['c', 'Carbs'], ['f', 'Fat']].map(([k, label]) => (
+                <label key={k}>{label}
+                  <span className="in-unit">
+                    <input type="number" inputMode="numeric" value={form[k]}
+                      placeholder={String(estMacros[k])}
+                      onChange={(e) => set({ [k]: e.target.value })} /> g
+                  </span>
+                </label>
+              ))}
+            </div>
+          )}
+        </div>
+
+        <button className="primary" style={{ width: '100%', marginTop: 14 }} onClick={save}>
+          {saved ? 'Saved ✓' : 'Save Goal'}
+        </button>
+        <div className="dim" style={{ fontSize: 12, marginTop: 8 }}>
+          Auto targets use Mifflin-St Jeor ({s.heightCm} cm, {s.age} yo) and the deficit needed to
+          reach your goal by its date. Editing current weight re-anchors the glide path to today.
+        </div>
+      </div>
+    </section>
   )
 }
 

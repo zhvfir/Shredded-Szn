@@ -1,23 +1,31 @@
 import { useMemo, useRef, useState } from 'react'
-import { GOAL, todayISO, fromISO, daysBetween, fmtDay } from './db.js'
+import { todayISO, fromISO, daysBetween, fmtDay, goalConfigured } from './db.js'
 
 const W = 340
 const H = 200
 const PAD = { l: 34, r: 12, t: 14, b: 22 }
 
-export default function WeightTab({ store }) {
+export default function WeightTab({ store, openSettings }) {
   const { weights } = store.state
+  const s = store.settings
   const [kg, setKg] = useState('')
   const [date, setDate] = useState(todayISO())
 
   const latest = weights[weights.length - 1]
-  const startDate = weights[0]?.date ?? GOAL.defaultStartDate
+  const configured = goalConfigured(s)
 
-  // Glide path: linear from (startDate, startKg) to (endDate, endKg)
+  // Glide-path anchors come straight from the goal the user set.
+  const startDate = s.startDate ?? weights[0]?.date ?? todayISO()
+  const startKg = s.startKg ?? weights[0]?.kg ?? (latest?.kg ?? 0)
+  const endDate = s.goalDate
+  const endKg = s.goalKg
+
+  // Linear glide from (startDate, startKg) to (goalDate, goalKg).
   const glideAt = (iso) => {
-    const total = daysBetween(startDate, GOAL.endDate)
+    const total = daysBetween(startDate, endDate)
+    if (!total) return endKg
     const t = Math.min(Math.max(daysBetween(startDate, iso) / total, 0), 1)
-    return GOAL.startKg + (GOAL.endKg - GOAL.startKg) * t
+    return startKg + (endKg - startKg) * t
   }
 
   const save = () => {
@@ -27,8 +35,24 @@ export default function WeightTab({ store }) {
     setKg('')
   }
 
-  const daysLeft = Math.max(daysBetween(todayISO(), GOAL.endDate), 0)
-  const toGo = latest ? (latest.kg - GOAL.endKg) : GOAL.startKg - GOAL.endKg
+  if (!configured) {
+    return (
+      <section>
+        <div className="sec">Weight</div>
+        <div className="card">
+          <div className="dim" style={{ fontSize: 14, marginBottom: 12 }}>
+            Set your current weight, goal weight and goal date to see your glide path.
+          </div>
+          <button className="primary" style={{ width: '100%' }} onClick={openSettings}>
+            Set Your Goal →
+          </button>
+        </div>
+      </section>
+    )
+  }
+
+  const daysLeft = Math.max(daysBetween(todayISO(), endDate), 0)
+  const toGo = latest ? (latest.kg - endKg) : startKg - endKg
   const vsPath = latest ? latest.kg - glideAt(latest.date) : null
   const vsPathColor = vsPath == null ? '' : vsPath <= 0 ? 'c-green' : vsPath <= 0.4 ? 'c-amber' : 'c-red'
 
@@ -52,9 +76,9 @@ export default function WeightTab({ store }) {
       </div>
 
       <section>
-        <div className="sec">Glide path — to {GOAL.endKg} kg by {fmtDay(GOAL.endDate)}</div>
+        <div className="sec">Glide path — to {endKg} kg by {fmtDay(endDate)}</div>
         <div className="card">
-          <WeightChart weights={weights} startDate={startDate} glideAt={glideAt} />
+          <WeightChart weights={weights} startDate={startDate} startKg={startKg} endDate={endDate} endKg={endKg} glideAt={glideAt} />
           <div className="dim" style={{ fontSize: 13, marginTop: 8 }}>
             <span style={{ color: 'var(--blue)' }}>●</span> Actual&nbsp;&nbsp;
             <span className="dim">╌╌</span> Target&nbsp;&nbsp;
@@ -93,16 +117,15 @@ export default function WeightTab({ store }) {
   )
 }
 
-function WeightChart({ weights, startDate, glideAt }) {
+function WeightChart({ weights, startDate, startKg, endDate, endKg, glideAt }) {
   const [tip, setTip] = useState(null)
   const svgRef = useRef(null)
 
   const { xOf, yOf, ticks, actualPts, glidePts } = useMemo(() => {
-    const endDate = GOAL.endDate
     const allDates = [startDate, endDate, ...weights.map((w) => w.date)]
     const minT = Math.min(...allDates.map((d) => fromISO(d).getTime()))
     const maxT = Math.max(...allDates.map((d) => fromISO(d).getTime()))
-    const kgs = [GOAL.startKg, GOAL.endKg, ...weights.map((w) => w.kg)]
+    const kgs = [startKg, endKg, ...weights.map((w) => w.kg)]
     const minKg = Math.floor(Math.min(...kgs) - 0.5)
     const maxKg = Math.ceil(Math.max(...kgs) + 0.5)
 
@@ -120,7 +143,7 @@ function WeightChart({ weights, startDate, glideAt }) {
       { x: xOf(endDate), y: yOf(glideAt(endDate)) },
     ]
     return { xOf, yOf, ticks, actualPts, glidePts }
-  }, [weights, startDate, glideAt])
+  }, [weights, startDate, startKg, endDate, endKg, glideAt])
 
   const linePath = actualPts.map((p, i) => `${i === 0 ? 'M' : 'L'}${p.x.toFixed(1)},${p.y.toFixed(1)}`).join(' ')
 
@@ -164,7 +187,7 @@ function WeightChart({ weights, startDate, glideAt }) {
         />
         <text x={glidePts[1].x - 2} y={glidePts[1].y - 5} textAnchor="end" fontSize="9"
           fill="var(--text-dim)">
-          {GOAL.endKg} kg
+          {endKg} kg
         </text>
 
         {/* actual weight */}

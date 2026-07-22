@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { TARGETS, STEP_GOAL, WORKOUT_TYPES, totals } from './db.js'
+import { STEP_GOAL, WORKOUT_TYPES, totals, goalReached } from './db.js'
 import DateNav from './DateNav.jsx'
 
 const r5 = (x) => Math.round(x / 5) * 5
@@ -18,15 +18,15 @@ export function macroColor(kind, pct) {
   return 'var(--red)'
 }
 
-function MacroDashboard({ day, goLog }) {
+function MacroDashboard({ day, goLog, targets }) {
   const t = totals(day.foods)
   const eaten = r5(t.kcal)
-  const left = TARGETS.kcal - eaten
-  const kcalPct = (eaten / TARGETS.kcal) * 100
+  const left = targets.kcal - eaten
+  const kcalPct = (eaten / targets.kcal) * 100
   const minis = [
-    { kind: 'p', name: 'Protein', val: r1(t.p), target: TARGETS.p },
-    { kind: 'c', name: 'Carbs', val: r1(t.c), target: TARGETS.c },
-    { kind: 'f', name: 'Fat', val: r1(t.f), target: TARGETS.f },
+    { kind: 'p', name: 'Protein', val: r1(t.p), target: targets.p },
+    { kind: 'c', name: 'Carbs', val: r1(t.c), target: targets.c },
+    { kind: 'f', name: 'Fat', val: r1(t.f), target: targets.f },
   ]
   return (
     <section>
@@ -36,8 +36,8 @@ function MacroDashboard({ day, goLog }) {
           {Math.abs(left)}
           <span className="hero-unit"> kcal {left >= 0 ? 'left' : 'over'}</span>
         </div>
-        <div className="hero-sub">{eaten} of {TARGETS.kcal} eaten</div>
-        <div className="bar big" role="progressbar" aria-valuenow={eaten} aria-valuemax={TARGETS.kcal} aria-label="Calories">
+        <div className="hero-sub">{eaten} of {targets.kcal} eaten</div>
+        <div className="bar big" role="progressbar" aria-valuenow={eaten} aria-valuemax={targets.kcal} aria-label="Calories">
           <div style={{ width: `${Math.min(kcalPct, 100)}%`, background: macroColor('kcal', kcalPct) }} />
         </div>
         {t.bufferKcal > 0 && (
@@ -194,13 +194,20 @@ function SupplementsCard({ day, date, updateDayFn, allSupplements, addSupplement
   )
 }
 
-export default function TodayTab({ store, date, setDate, goLog }) {
+export default function TodayTab({ store, date, setDate, goLog, openSettings }) {
   const day = store.getDay(date)
+  const latestKg = store.state.weights[store.state.weights.length - 1]?.kg
+  const reached = goalReached(store.settings, latestKg)
 
   return (
     <>
       <DateNav date={date} setDate={setDate} />
-      <MacroDashboard day={day} goLog={goLog} />
+      {reached && (
+        <button className="goal-banner" onClick={openSettings}>
+          🎉 You hit {store.settings.goalKg} kg — tap to set a new goal
+        </button>
+      )}
+      <MacroDashboard day={day} goLog={goLog} targets={store.targets} />
       <WorkoutCard day={day} date={date} updateDayFn={store.updateDayFn} />
       <StepsCard day={day} date={date} updateDayFn={store.updateDayFn} />
       <SupplementsCard
