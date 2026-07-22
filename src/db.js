@@ -68,20 +68,36 @@ export function suggestKcal(s) {
   return Math.round(Math.max(maint - deficit, bmr(s)) / 10) * 10
 }
 
+// Carbs are always whatever calories remain after protein and fat.
+export function carbsFromKcal(kcal, p, f) {
+  return Math.max(Math.round((kcal - p * 4 - f * 9) / 4), 0)
+}
+
+// Recommended protein/fat bands, in grams, from the per-pound rules.
+export function macroRanges(s) {
+  const lb = (s.startKg ?? 75) * LB_PER_KG
+  return {
+    protein: [Math.round(0.8 * lb), Math.round(1.0 * lb)],
+    fat: [Math.round(0.3 * lb), Math.round(0.5 * lb)],
+  }
+}
+
 // Suggested macros for a cut: high protein, moderate fat, carbs fill the rest.
 export function suggestMacros(s, kcal) {
   const lb = (s.startKg ?? 75) * LB_PER_KG
   const p = Math.round(MACRO_PER_LB.protein * lb)
   const f = Math.round(MACRO_PER_LB.fat * lb)
-  const c = Math.max(Math.round((kcal - p * 4 - f * 9) / 4), 0)
-  return { p, c, f }
+  return { p, c: carbsFromKcal(kcal, p, f), f }
 }
 
-// The numbers every screen actually uses.
+// The numbers every screen actually uses. Carbs always derive from the current
+// calorie target, so protein/fat are the only stored macro choices.
 export function effectiveTargets(s) {
   const kcal = s.kcalTarget ?? suggestKcal(s)
-  const m = s.macros ?? suggestMacros(s, kcal)
-  return { kcal, p: m.p, c: m.c, f: m.f }
+  if (!s.macros) return { kcal, ...suggestMacros(s, kcal) }
+  const p = Math.round(Number(s.macros.p) || 0)
+  const f = Math.round(Number(s.macros.f) || 0)
+  return { kcal, p, c: carbsFromKcal(kcal, p, f), f }
 }
 
 export function goalConfigured(s) {

@@ -1,5 +1,5 @@
 import { useRef, useState } from 'react'
-import { addDays, todayISO, fmtDay, suggestKcal, suggestMacros } from './db.js'
+import { addDays, todayISO, fmtDay, suggestKcal, suggestMacros, macroRanges, carbsFromKcal } from './db.js'
 import { getSyncConfig, setSyncConfig, clearSyncConfig, fetchSteps } from './sync.js'
 import { pushSupported, remindersOn, enableReminders, disableReminders, sendTest } from './push.js'
 import { getThemePref, setThemePref } from './theme.js'
@@ -48,24 +48,28 @@ function AppearanceCard() {
   )
 }
 
+const clamp = (v, [lo, hi]) => Math.min(Math.max(v, lo), hi)
+
 function GoalCard({ store }) {
   const s = store.settings
-  const [form, setForm] = useState(() => ({
-    startKg: s.startKg ?? '',
-    goalKg: s.goalKg ?? '',
-    goalDate: s.goalDate ?? '',
-    kcalAuto: s.kcalTarget == null,
-    kcalTarget: s.kcalTarget ?? '',
-    macroAuto: s.macros == null,
-    p: s.macros?.p ?? '',
-    c: s.macros?.c ?? '',
-    f: s.macros?.f ?? '',
-  }))
+  const [form, setForm] = useState(() => {
+    const kcal = s.kcalTarget ?? suggestKcal(s)
+    const seed = s.macros ?? suggestMacros(s, kcal)
+    return {
+      startKg: s.startKg ?? '',
+      goalKg: s.goalKg ?? '',
+      goalDate: s.goalDate ?? '',
+      kcalAuto: s.kcalTarget == null,
+      kcalTarget: s.kcalTarget ?? '',
+      p: Math.round(Number(seed.p) || 0),
+      f: Math.round(Number(seed.f) || 0),
+    }
+  })
   const [saved, setSaved] = useState(false)
 
   const set = (patch) => { setForm((f) => ({ ...f, ...patch })); setSaved(false) }
 
-  // Live estimate from whatever's typed, for the "Auto" previews.
+  // Live values from whatever's on screen.
   const draft = {
     ...s,
     startKg: parseFloat(form.startKg) || s.startKg,
@@ -74,7 +78,13 @@ function GoalCard({ store }) {
     startDate: s.startDate ?? todayISO(),
   }
   const estKcal = suggestKcal(draft)
-  const estMacros = suggestMacros(draft, form.kcalAuto ? estKcal : (parseFloat(form.kcalTarget) || estKcal))
+  const effKcal = form.kcalAuto ? estKcal : (parseFloat(form.kcalTarget) || estKcal)
+
+  // Protein/fat are picked within their recommended bands; carbs take the rest.
+  const ranges = macroRanges(draft)
+  const pVal = clamp(Math.round(Number(form.p) || ranges.protein[1]), ranges.protein)
+  const fVal = clamp(Math.round(Number(form.f) || ranges.fat[1]), ranges.fat)
+  const carbs = carbsFromKcal(effKcal, pVal, fVal)
 
   const save = () => {
     const startKg = parseFloat(form.startKg)
@@ -88,14 +98,29 @@ function GoalCard({ store }) {
       goalKg,
       goalDate: form.goalDate,
       kcalTarget: form.kcalAuto ? null : (parseFloat(form.kcalTarget) || null),
-      macros: form.macroAuto ? null : {
-        p: parseFloat(form.p) || 0,
-        c: parseFloat(form.c) || 0,
-        f: parseFloat(form.f) || 0,
-      },
+      macros: { p: pVal, f: fVal }, // carbs derive from calories
     })
     setSaved(true)
   }
+
+  const macroSlider = (key, label, val, range) => (
+    <div className="macro-range">
+      <div className="mr-row">
+        <span className="mr-label">{label}</span>
+        <span className="mr-val num">{val} g</span>
+      </div>
+      <input
+        type="range" min={range[0]} max={range[1]} step="1" value={val}
+        onChange={(e) => set({ [key]: Number(e.target.value) })}
+        aria-label={`${label} target`}
+      />
+      <div className="mr-ends">
+        <span>{range[0]} g</span>
+        <span>{key === 'p' ? '0.8–1 g/lb' : '0.3–0.5 g/lb'}</span>
+        <span>{range[1]} g</span>
+      </div>
+    </div>
+  )
 
   return (
     <section>
@@ -139,29 +164,13 @@ function GoalCard({ store }) {
         </div>
 
         <div className="goal-target">
-          <div className="goal-target-head">
-            <span>Daily Macros</span>
-            <button className="link-toggle" onClick={() => set({ macroAuto: !form.macroAuto })}>
-              {form.macroAuto ? 'Set Manually' : 'Use Auto'}
-            </button>
+          <div className="goal-target-head"><span>Daily Macros</span></div>
+          {macroSlider('p', 'Protein', pVal, ranges.protein)}
+          {macroSlider('f', 'Fat', fVal, ranges.fat)}
+          <div className="mr-carbs">
+            <span className="mr-label">Carbs</span>
+            <span className="mr-val num">{carbs} g <span className="dim">· fills remaining calories</span></span>
           </div>
-          {form.macroAuto ? (
-            <div className="auto-val num">
-              {estMacros.p}P · {estMacros.c}C · {estMacros.f}F <span className="dim">g · Estimated</span>
-            </div>
-          ) : (
-            <div className="macro-inputs">
-              {[['p', 'Protein'], ['c', 'Carbs'], ['f', 'Fat']].map(([k, label]) => (
-                <label key={k}>{label}
-                  <span className="in-unit">
-                    <input type="number" inputMode="numeric" value={form[k]}
-                      placeholder={String(estMacros[k])}
-                      onChange={(e) => set({ [k]: e.target.value })} /> g
-                  </span>
-                </label>
-              ))}
-            </div>
-          )}
         </div>
 
         <button className="primary" style={{ width: '100%', marginTop: 14 }} onClick={save}>
@@ -169,8 +178,9 @@ function GoalCard({ store }) {
         </button>
         <div className="dim" style={{ fontSize: 12, marginTop: 8 }}>
           Auto calories use Mifflin-St Jeor ({s.heightCm} cm, {s.age} yo) and the deficit needed to
-          reach your goal by its date. Auto macros: protein ~1 g/lb, fat ~0.4 g/lb, carbs fill the
-          rest. Editing current weight re-anchors the glide path to today.
+          reach your goal by its date. Set protein (0.8–1 g/lb) and fat (0.3–0.5 g/lb) within the
+          recommended bands; carbs fill the rest of your calories. Editing current weight re-anchors
+          the glide path to today.
         </div>
       </div>
     </section>
