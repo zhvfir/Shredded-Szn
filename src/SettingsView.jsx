@@ -122,7 +122,7 @@ function GoalCard({ store }) {
             </div>
           ) : (
             <div className="macro-inputs">
-              {[['p', 'Protein'], ['c', 'Carbs'], ['f', 'Fats']].map(([k, label]) => (
+              {[['p', 'Protein'], ['c', 'Carbs'], ['f', 'Fat']].map(([k, label]) => (
                 <label key={k}>{label}
                   <span className="in-unit">
                     <input type="number" inputMode="numeric" value={form[k]}

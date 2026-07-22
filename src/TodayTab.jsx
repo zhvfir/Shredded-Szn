@@ -26,7 +26,7 @@ function MacroDashboard({ day, goLog, targets }) {
   const minis = [
     { kind: 'p', name: 'Protein', val: r1(t.p), target: targets.p },
     { kind: 'c', name: 'Carbs', val: r1(t.c), target: targets.c },
-    { kind: 'f', name: 'Fats', val: r1(t.f), target: targets.f },
+    { kind: 'f', name: 'Fat', val: r1(t.f), target: targets.f },
   ]
   return (
     <section>
