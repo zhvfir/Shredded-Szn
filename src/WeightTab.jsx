@@ -67,7 +67,7 @@ export default function WeightTab({ store, openSettings }) {
           <div className={`v num ${vsPathColor}`}>
             {vsPath == null ? '—' : `${vsPath > 0 ? '+' : ''}${vsPath.toFixed(1)}`}
           </div>
-          <div className="k">vs glide path</div>
+          <div className="k">vs Glide Path</div>
         </div>
         <div className="stat">
           <div className="v num">{daysLeft}</div>
@@ -76,7 +76,7 @@ export default function WeightTab({ store, openSettings }) {
       </div>
 
       <section>
-        <div className="sec">Glide path — to {endKg} kg by {fmtDay(endDate)}</div>
+        <div className="sec">Glide Path — to {endKg} kg by {fmtDay(endDate)}</div>
         <div className="card">
           <WeightChart weights={weights} startDate={startDate} startKg={startKg} endDate={endDate} endKg={endKg} glideAt={glideAt} />
           <div className="dim" style={{ fontSize: 13, marginTop: 8 }}>

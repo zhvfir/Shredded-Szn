@@ -1,6 +1,6 @@
 // Network-first with cache fallback: the app keeps working offline
 // after the first successful load. Data itself lives in localStorage.
-const CACHE = 'cutlog-shell-v2'
+const CACHE = 'cutlog-shell-v3'
 
 self.addEventListener('install', () => self.skipWaiting())
 self.addEventListener('activate', (e) =>
@@ -42,9 +42,9 @@ self.addEventListener('fetch', (e) => {
 // short delivery delay still lands on the right reminder.
 self.addEventListener('push', (event) => {
   const slots = [
-    { t: 6 * 60,  title: 'Weigh-In',     body: 'Log your morning weight before breakfast.' },
+    { t: 6 * 60,  title: 'Weigh-In',     body: 'Log your morning weight.' },
     { t: 21 * 60, title: 'Daily Review', body: 'Log any missed meals, steps and workout.' },
-    { t: 22 * 60, title: 'Supplements',  body: 'Creatine + Magnesium Glycinate.' },
+    { t: 22 * 60, title: 'Supplements',  body: 'Time to take your supplements.' },
   ]
   const now = new Date()
   const mins = now.getHours() * 60 + now.getMinutes()

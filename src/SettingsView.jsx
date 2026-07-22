@@ -73,19 +73,19 @@ function GoalCard({ store }) {
       <div className="sec">Goal &amp; Targets</div>
       <div className="card">
         <div className="goal-grid">
-          <label>Current weight
+          <label>Current Weight
             <span className="in-unit">
               <input type="number" inputMode="decimal" step="0.1" value={form.startKg}
                 onChange={(e) => set({ startKg: e.target.value })} /> kg
             </span>
           </label>
-          <label>Goal weight
+          <label>Goal Weight
             <span className="in-unit">
               <input type="number" inputMode="decimal" step="0.1" value={form.goalKg}
                 onChange={(e) => set({ goalKg: e.target.value })} /> kg
             </span>
           </label>
-          <label>Goal date
+          <label>Goal Date
             <input type="date" value={form.goalDate} min={todayISO()}
               onChange={(e) => set({ goalDate: e.target.value })} />
           </label>
@@ -93,13 +93,13 @@ function GoalCard({ store }) {
 
         <div className="goal-target">
           <div className="goal-target-head">
-            <span>Daily calories</span>
+            <span>Daily Calories</span>
             <button className="link-toggle" onClick={() => set({ kcalAuto: !form.kcalAuto })}>
-              {form.kcalAuto ? 'Set manually' : 'Use auto'}
+              {form.kcalAuto ? 'Set Manually' : 'Use Auto'}
             </button>
           </div>
           {form.kcalAuto ? (
-            <div className="auto-val num">{estKcal} kcal <span className="dim">· estimated</span></div>
+            <div className="auto-val num">{estKcal} kcal <span className="dim">· Estimated</span></div>
           ) : (
             <span className="in-unit">
               <input type="number" inputMode="numeric" value={form.kcalTarget}
@@ -111,18 +111,18 @@ function GoalCard({ store }) {
 
         <div className="goal-target">
           <div className="goal-target-head">
-            <span>Daily macros</span>
+            <span>Daily Macros</span>
             <button className="link-toggle" onClick={() => set({ macroAuto: !form.macroAuto })}>
-              {form.macroAuto ? 'Set manually' : 'Use auto'}
+              {form.macroAuto ? 'Set Manually' : 'Use Auto'}
             </button>
           </div>
           {form.macroAuto ? (
             <div className="auto-val num">
-              {estMacros.p}P · {estMacros.c}C · {estMacros.f}F <span className="dim">g · estimated</span>
+              {estMacros.p}P · {estMacros.c}C · {estMacros.f}F <span className="dim">g · Estimated</span>
             </div>
           ) : (
             <div className="macro-inputs">
-              {[['p', 'Protein'], ['c', 'Carbs'], ['f', 'Fat']].map(([k, label]) => (
+              {[['p', 'Protein'], ['c', 'Carbs'], ['f', 'Fats']].map(([k, label]) => (
                 <label key={k}>{label}
                   <span className="in-unit">
                     <input type="number" inputMode="numeric" value={form[k]}
@@ -219,7 +219,7 @@ function SyncCard({ store }) {
               <div className="dim" style={{ fontSize: 12, marginTop: 8 }}>{status}</div>
             )}
             <div className="dim" style={{ fontSize: 12, marginTop: 4 }}>
-              Steps you typed in yourself are never overwritten.
+              Steps you typed in are never overwritten.
             </div>
           </>
         )}
@@ -341,7 +341,7 @@ function DataCard({ store }) {
           aria-label="Import backup file"
         />
         <div className="dim" style={{ fontSize: 12, marginTop: 8 }}>
-          Your log lives only on this device. Export a backup now and then — Importing replaces everything with the backup.
+          Your log lives only on this device. Export a backup now and then. Importing replaces everything with the backup.
         </div>
         <div className="dim" style={{ fontSize: 11, marginTop: 6 }}>
           Version {__APP_VERSION__}

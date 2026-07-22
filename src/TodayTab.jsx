@@ -26,7 +26,7 @@ function MacroDashboard({ day, goLog, targets }) {
   const minis = [
     { kind: 'p', name: 'Protein', val: r1(t.p), target: targets.p },
     { kind: 'c', name: 'Carbs', val: r1(t.c), target: targets.c },
-    { kind: 'f', name: 'Fat', val: r1(t.f), target: targets.f },
+    { kind: 'f', name: 'Fats', val: r1(t.f), target: targets.f },
   ]
   return (
     <section>
@@ -204,7 +204,7 @@ export default function TodayTab({ store, date, setDate, goLog, openSettings }) 
       <DateNav date={date} setDate={setDate} />
       {reached && (
         <button className="goal-banner" onClick={openSettings}>
-          🎉 You hit {store.settings.goalKg} kg — tap to set a new goal
+          You hit {store.settings.goalKg} kg 🎉 — Tap to set a new goal
         </button>
       )}
       <MacroDashboard day={day} goLog={goLog} targets={store.targets} />

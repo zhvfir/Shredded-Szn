@@ -133,7 +133,7 @@ export default function LogTab({ store, date, setDate }) {
                 <li key={f.id}>
                   <EditableQty food={f} onCommit={(q) => rescale(store, date, f, q)} />
                   <span className="fname">{f.name}</span>
-                  {f.buffer && <span className="tag-buffer">buffer</span>}
+                  {f.buffer && <span className="tag-buffer">Buffer</span>}
                   <span className="kcal">{r5(f.kcal)} kcal · {r1(f.p)}P</span>
                   <button className="del" onClick={() => store.removeFood(date, f.id)} aria-label={`Remove ${f.name}`}>✕</button>
                 </li>
