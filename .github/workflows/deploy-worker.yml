@@ -38,14 +38,3 @@ jobs:
 
       - name: Deploy worker
         run: npx wrangler deploy
-
-      - name: Sync Anthropic key for AI food lookup (only if provided)
-        env:
-          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
-        run: |
-          if [ -n "$ANTHROPIC_API_KEY" ]; then
-            printf '%s' "$ANTHROPIC_API_KEY" | npx wrangler secret put ANTHROPIC_API_KEY
-            echo "ANTHROPIC_API_KEY synced — AI food lookup is live."
-          else
-            echo "ANTHROPIC_API_KEY not set as a repo secret — AI food lookup stays disabled (endpoint returns a friendly 503)."
-          fi
