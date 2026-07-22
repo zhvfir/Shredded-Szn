@@ -20,6 +20,26 @@
   --shadow: 0 0 0 1px var(--border);
 }
 
+/* Bluish-grey light theme. Applied when the resolved theme is light
+   (see src/theme.js). Accent + status colours are darkened so they keep
+   AA contrast on the near-white surfaces. Fonts/shadow inherit from :root. */
+:root[data-theme='light'] {
+  --bg: #EEF2F6;
+  --surface: #FFFFFF;
+  --surface-alt: #E3E9F0;
+  --border: #D3DBE4;
+  --text: #1E2A38;
+  --text-dim: #5B6B7C;
+  --on-bg: #1E2A38;
+  --on-bg-dim: #5B6B7C;
+  --blue: #1668C7;
+  --blue-fill: #1A6FD0;
+  --amber: #9A6700;
+  --green: #1A7F37;
+  --red: #CF222E;
+  --on-accent: #FFFFFF;
+}
+
 * { box-sizing: border-box; margin: 0; padding: 0; }
 
 html { -webkit-text-size-adjust: 100%; }

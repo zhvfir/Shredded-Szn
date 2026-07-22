@@ -2,6 +2,7 @@ import { useRef, useState } from 'react'
 import { addDays, todayISO, fmtDay, suggestKcal, suggestMacros } from './db.js'
 import { getSyncConfig, setSyncConfig, clearSyncConfig, fetchSteps } from './sync.js'
 import { pushSupported, remindersOn, enableReminders, disableReminders, sendTest } from './push.js'
+import { getThemePref, setThemePref } from './theme.js'
 
 export default function SettingsView({ store, onBack }) {
   return (
@@ -11,11 +12,39 @@ export default function SettingsView({ store, onBack }) {
         <span className="label">Settings</span>
         <span style={{ width: 40 }} />
       </div>
+      <AppearanceCard />
       <GoalCard store={store} />
       <RemindersCard />
       <SyncCard store={store} />
       <DataCard store={store} />
     </>
+  )
+}
+
+function AppearanceCard() {
+  const [pref, setPref] = useState(getThemePref)
+  const choose = (p) => { setPref(p); setThemePref(p) }
+  return (
+    <section>
+      <div className="sec">Appearance</div>
+      <div className="card">
+        <div className="chips">
+          {[['light', 'Light'], ['dark', 'Dark'], ['auto', 'Auto']].map(([v, label]) => (
+            <button
+              key={v}
+              className={`chip ${pref === v ? 'on' : ''}`}
+              onClick={() => choose(v)}
+              aria-pressed={pref === v}
+            >
+              {label}
+            </button>
+          ))}
+        </div>
+        <div className="dim" style={{ fontSize: 12, marginTop: 10 }}>
+          Auto follows your phone’s Light / Dark setting.
+        </div>
+      </div>
+    </section>
   )
 }
 
