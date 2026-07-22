@@ -168,8 +168,9 @@ function GoalCard({ store }) {
           {saved ? 'Saved ✓' : 'Save Goal'}
         </button>
         <div className="dim" style={{ fontSize: 12, marginTop: 8 }}>
-          Auto targets use Mifflin-St Jeor ({s.heightCm} cm, {s.age} yo) and the deficit needed to
-          reach your goal by its date. Editing current weight re-anchors the glide path to today.
+          Auto calories use Mifflin-St Jeor ({s.heightCm} cm, {s.age} yo) and the deficit needed to
+          reach your goal by its date. Auto macros: protein ~1 g/lb, fat ~0.4 g/lb, carbs fill the
+          rest. Editing current weight re-anchors the glide path to today.
         </div>
       </div>
     </section>

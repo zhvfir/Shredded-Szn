@@ -12,6 +12,13 @@ export const STEP_GOAL = 10000
 // Rough energy density of body mass — used to turn a weight goal into a
 // daily calorie deficit.
 export const KCAL_PER_KG = 7700
+export const LB_PER_KG = 2.20462
+
+// Macro guidance, per POUND of bodyweight (weight is stored in kg and only
+// converted here). Protein 0.8–1 g/lb, fat 0.3–0.5 g/lb; carbs are whatever
+// calories remain (a slice of that is the pre-workout window). Defaults sit at
+// the cut-friendly end: high protein, moderate fat.
+export const MACRO_PER_LB = { protein: 1.0, fat: 0.4 }
 
 // Biometrics that feed the Mifflin-St Jeor estimate. Editable per-field,
 // but seeded to the owner's stats so the estimate is right out of the box.
@@ -63,9 +70,9 @@ export function suggestKcal(s) {
 
 // Suggested macros for a cut: high protein, moderate fat, carbs fill the rest.
 export function suggestMacros(s, kcal) {
-  const w = s.startKg ?? 75
-  const p = Math.round(2.2 * w)
-  const f = Math.round(0.8 * w)
+  const lb = (s.startKg ?? 75) * LB_PER_KG
+  const p = Math.round(MACRO_PER_LB.protein * lb)
+  const f = Math.round(MACRO_PER_LB.fat * lb)
   const c = Math.max(Math.round((kcal - p * 4 - f * 9) / 4), 0)
   return { p, c, f }
 }
